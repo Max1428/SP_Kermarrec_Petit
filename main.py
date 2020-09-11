@@ -16,7 +16,6 @@ class proteine(object):
 			self.AA_name = np.array([self.AA_name])
 			
 			#self.Calpha = np.concatenate((self.Calpha, np.concatenate(self.AA_name)[:,None]), axis=1)
-			#self.Calpha = np.column_stack((self.Calpha, np.array([self.AA_name])))
 		self.center()
 
 	def center(self):
