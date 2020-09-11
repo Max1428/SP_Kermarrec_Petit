@@ -1,6 +1,7 @@
 ###Function reading a pdb file, extracting all alpha carbon and creating a new output file
 
 import argparse
+import sys
 
 def trouve_calpha(pdbfile, out):
 
@@ -31,4 +32,6 @@ if __name__ == "__main__":
 		print("Veuillez recommencer en sélectionnant un fichier avec l'estension '.pdb'")
 	else: 
 		trouve_calpha(args.PDBfile, args.OutFile)
+
+
 
