@@ -1,12 +1,15 @@
 import argparse
 import numpy as np
+from Bio.PDB import PDBParser
+from Bio.PDB.DSSP import DSSP
 
 
 class proteine(object):
-	def __init__(self, file):
+	def __init__(self, file, cafile):
 		self.Calpha=np.array([0,0,0,0])
-		self.AA_name = []
-		with open(file, 'r') as fillin:
+		self.AA_name = [] #Amino Acid name
+		self.ASA = [] #Accessibility solvent area relative between 0 and 1
+		with open(cafile, 'r') as fillin:
 			lines=fillin.readlines()
 			for line in lines:
 				#self.Calpha = np.vstack((self.Calpha, np.float_(line.split()[5:9]))) 
@@ -17,24 +20,36 @@ class proteine(object):
 			
 			#self.Calpha = np.concatenate((self.Calpha, np.concatenate(self.AA_name)[:,None]), axis=1)
 		self.center()
+		self.calc_ASA
 
 	def center(self):
 		self.centre=list(np.mean(self.Calpha, axis=0))[1:4]
+
+	def calc_ASA(self, file):
+		output = file[:-4]+".dssp"
+		p = PDBParser()
+		structure = p.get_structure(file[:-4].upper(), file)
+		model = structure[0]
+		dspp = DSSP(model, file)
+		for AA in dssp:
+			self.ASA.append(AA[3])
+
 
 	def __str__(self):
 		return("Gravity center : {}".format(self.centre))
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument("PDBfile", help = "PDB file with only alpha carbons extracted, no header, can be done with calpha.py file", type=str)
+	parser.add_argument("PDBfile", help = "PDB file", type=str)
+	parser.add_argument("Calphafile", help = "PDB file with only alpha carbons extracted, no header, can be done with calpha.py file", type=str)
 	args = parser.parse_args()
 
 
 
-	if args.PDBfile[-4:] != '.pdb': #Vérification de l'extension pdb
+	if args.PDBfile[-4:] != '.pdb' or args.Calphafile[-4:] != '.pdb': #Vérification de l'extension pdb
 		print("Please select file with pdb extension")
 	else: 
-		pro = proteine(args.PDBfile)
+		pro = proteine(args.PDBfile, args.Calphafile)
 		print(pro)
 
 
