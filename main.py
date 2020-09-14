@@ -18,7 +18,7 @@ class proteine(object):
 		self.center()
 		self.calc_ASA(file)
 
-	def trouve_calpha(self, file):
+	def trouve_calpha(self, file): #Read pdbfile and extracing in memorr and in file all alpha carbon
 		with open(file, 'r') as fillin, open(self.cafile, 'w') as fillout:
 			lines = fillin.readlines()
 			for line in lines:
@@ -31,10 +31,10 @@ class proteine(object):
 			self.Calpha = np.delete(self.Calpha, (0), axis = 0) #Delete the first row of the array fill with 0.
 			self.AA_name = np.array([self.AA_name])
 
-	def center(self):
+	def center(self): #Calculate the center of the proteine
 		self.centre=list(np.mean(self.Calpha, axis=0))[1:4]
 
-	def calc_ASA(self, file):
+	def calc_ASA(self, file): #Calculate for each amino acid the relative accessibility solvent area, stocking it in a list
 		output = file[:-4]+".dssp"
 		p = PDBParser()
 		structure = p.get_structure(file[:-4].upper(), file)
@@ -45,7 +45,7 @@ class proteine(object):
 
 
 	def __str__(self):
-		return("Gravity center : {}\n Accessibility solvent area : {}".format(self.centre, self.ASA))
+		return("PDB file : {}\nGravity center : {}".format(self.file, self.centre))
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
