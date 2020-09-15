@@ -1,0 +1,5 @@
+*.pdb
+*.dssp
+__pycache__
+amino_acid_backup.py
+fibbo.py

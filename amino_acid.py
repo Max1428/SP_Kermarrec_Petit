@@ -17,10 +17,10 @@ def amino_acid_caracteristics():
         df = pd.DataFrame(amino, index=labels, columns=head)
         df.drop(columns = ['amino_acid'], inplace = True)
         df.drop(index = ['amino_acid'], inplace = True)
-	return(df)
+    return(df)
 
         #labels = ['amino_acid', 'ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLU', 'GLN', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL']
         #head = ['amino_acid', 'aromatic', 'polar', 'aliphatic', 'charged', 'negative', 'positive', 'hydrophobic', 'small', 'tiny']
 
 if __name__ == '__main__':
-	bidule()
+    bidule()
