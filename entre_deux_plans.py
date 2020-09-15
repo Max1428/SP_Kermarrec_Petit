@@ -61,6 +61,7 @@ def max_score(plan_1, plan_2, ca_list, ca_hydro, maxi):
 		#print("tmp_score = {}".format(tmp_score))
 		if(tmp_score>score_max):
 			score_max=tmp_score
+	#print("\n")
 
 
 	return score_max
