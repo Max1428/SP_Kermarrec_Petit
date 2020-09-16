@@ -40,11 +40,12 @@ class sphere(object):
 
 
 class proteine(object):
-	def __init__(self, file, aacDF, N):
+	def __init__(self, file, aacDF, N, ASAT):
 		self.file = file
-		self.cafile = file[:-4]+"_ca.pdb" #output file creation
+		self.cafile = file[8:-4]+"_ca.pdb" #output file creation
 		self.Calpha=np.array([0,0,0,0,0])
 		self.AA_name = [] #Amino Acid name
+		self.ASAT = ASAT #Accessibility solvent area threshold
 		self.ASA = [] #Accessibility solvent area relative between 0 and 1
 		self.ca_hydrophobe = [] #Alpha carbon solvent exposed list
 		self.best_tilt = [] #Tilt with the higest score
@@ -60,7 +61,10 @@ class proteine(object):
 		self.scoring() #Function calculatin best score for every points created
 		self.output()
 
+<<<<<<< HEAD:main.py
 
+=======
+>>>>>>> Ferdi:src/main.py
 	def output(self):
 		plan_1 = self.best_tilt[0:4]
 		plan_2=self.best_tilt[0:3]
@@ -83,6 +87,7 @@ class proteine(object):
 				
 		self.bilan = ",".join(block_list)
 
+<<<<<<< HEAD:main.py
 		filename=(self.file[:-4]+".txt")
 		#print(filename)
 		with open(filename, "w") as fillout:
@@ -93,6 +98,15 @@ class proteine(object):
 
 
 
+=======
+		filename=(self.file[8:-4]+".txt")
+		print(filename)
+		with open(filename, "w") as fillout:
+			fillout.write("PDB file : {}\n\nGravity center : {}\n\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\n\nSequences: {}"
+			.format(self.file, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
+			 self.best_tilt[2], self.best_tilt[3], self.best_tilt[4], self.bilan))
+		os.rename(filename, "../results/"+filename)
+>>>>>>> Ferdi:src/main.py
 
 
 	def scoring(self):
@@ -108,6 +122,7 @@ class proteine(object):
 				self.best_tilt.append(d)
 				self.best_tilt.append(dd)
 				self.best_tilt.append(score_max)
+<<<<<<< HEAD:main.py
 				#print(entre_deux_plans.score_plan(plan_1, plan_2, self.Calpha, self.ca_hydrophobe))
 				#print("BEst tilt : {}".format(self.best_tilt))
 		#print(self.best_tilt)
@@ -121,6 +136,8 @@ class proteine(object):
 		#	self.plan_score = np.vstack((self.plan_score, np.float_([plan_1[0], plan_1[1], plan_1[2], plan_1[3], plan_2[3], val])))
 		#self.plan_score = np.delete(self.plan_score, (0), axis = 0)
 		#print(self.plan_score)
+=======
+>>>>>>> Ferdi:src/main.py
 
 
 	def ca_finder(self, file): #Read pdbfile and extracing in memorry and in file all alpha carbon
@@ -134,6 +151,7 @@ class proteine(object):
 					self.Calpha = np.vstack((self.Calpha, np.float_([line[22:26],line[30:38], line[38:46], line[46:54], 0]))) #get the number and position of all Calpha
 					self.AA_name.append(line[17:20].strip())
 			self.Calpha = np.delete(self.Calpha, (0), axis = 0) #Delete the first row of the array fill with 0.
+		os.rename(self.cafile, "../results/"+self.cafile)
 
 	def center(self): #Calculate the center of the proteine
 		self.centre=list(np.mean(self.Calpha, axis=0))[1:4]
@@ -157,17 +175,13 @@ class proteine(object):
 		for AA in dssp:
 			self.ASA.append(AA[3])
 
-
-
 	def hydrophobicity(self, aacDF):
 		for i in range(0,len(self.AA_name)):
-			if self.ASA[i]>0.30:
+			if self.ASA[i]>self.ASAT:
 				continue
 			self.Calpha[i][4]=int(aacDF.loc[[str(self.AA_name[i])],["hydrophobic"]].values)
 			self.ca_hydrophobe.append(i)
 
-			#print("AA name : {}\t hydrophobicity: {}".format(self.AA_name[i], aacDF.loc[[self.AA_name[i]],["hydrophobic"]]))
-		#print(self.Calpha[:,[4]])
 
 	def __str__(self):
 		return("PDB file : {}\nGravity center : {}\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\nSequences: {}"
@@ -178,15 +192,18 @@ class proteine(object):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("PDBfile", help = "PDB file", type=str)
+	parser.add_argument("--AAfile", help = "Mandatory file auto", type=str, default="../data/amino_acid.csv")
 	parser.add_argument("--N", help="Number of point used to create the sphere (default = 20point)"
 		, type=int, default=20)
+	parser.add_argument("--ASAT", help="Accessibility solvent area threshold between 0 and 1 (default=0.3)",
+		type=float, default=0.3)
 	args = parser.parse_args()
 
-	aacDF=aa.amino_acid_caracteristics()
+	aacDF=aa.amino_acid_caracteristics(args.AAfile)
 	if args.PDBfile[-4:] != '.pdb': #Vérification de l'extension pdb
 		print("Please select file with pdb extension")
 	else: 
-		pro = proteine(args.PDBfile, aacDF, args.N)
+		pro = proteine(args.PDBfile, aacDF, args.N, args.ASAT)
 		print(pro)
 		
 
