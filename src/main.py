@@ -40,7 +40,8 @@ class sphere(object):
 
 
 class proteine(object):
-	def __init__(self, file, aacDF, N, ASAT):
+	def __init__(self, file, aacDF, N, ASAT, MBW):
+		self.MBW = MBW
 		self.file = file
 		self.cafile = file[8:-4]+"_ca.pdb" #output file creation
 		self.Calpha=np.array([0,0,0,0,0])
@@ -61,10 +62,6 @@ class proteine(object):
 		self.scoring() #Function calculatin best score for every points created
 		self.output()
 
-<<<<<<< HEAD:main.py
-
-=======
->>>>>>> Ferdi:src/main.py
 	def output(self):
 		plan_1 = self.best_tilt[0:4]
 		plan_2=self.best_tilt[0:3]
@@ -87,18 +84,6 @@ class proteine(object):
 				
 		self.bilan = ",".join(block_list)
 
-<<<<<<< HEAD:main.py
-		filename=(self.file[:-4]+".txt")
-		#print(filename)
-		with open(filename, "w") as fillout:
-			fillout.write("PDB file : {}\nGravity center : {}\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\nSequences: {}"
-			.format(self.file, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
-			 self.best_tilt[2], self.best_tilt[3], self.best_tilt[4], self.bilan))
-		os.rename(filename, "../results/"+filename)
-
-
-
-=======
 		filename=(self.file[8:-4]+".txt")
 		print(filename)
 		with open(filename, "w") as fillout:
@@ -106,13 +91,13 @@ class proteine(object):
 			.format(self.file, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
 			 self.best_tilt[2], self.best_tilt[3], self.best_tilt[4], self.bilan))
 		os.rename(filename, "../results/"+filename)
->>>>>>> Ferdi:src/main.py
+
 
 
 	def scoring(self):
 		score_max = 0
 		for i,vector in enumerate(self.small_sphere.points_center):
-			plan_1, plan_2 = plan.plan_construction(self.centre, vector.tolist(), self.dmax)
+			plan_1, plan_2 = plan.plan_construction(self.centre, vector.tolist(), self.dmax, self.MBW)
 			score, d, dd = entre_deux_plans.max_score(plan_1, plan_2, self.Calpha, self.ca_hydrophobe, self.dmax)
 			
 			if score>=score_max:
@@ -122,22 +107,6 @@ class proteine(object):
 				self.best_tilt.append(d)
 				self.best_tilt.append(dd)
 				self.best_tilt.append(score_max)
-<<<<<<< HEAD:main.py
-				#print(entre_deux_plans.score_plan(plan_1, plan_2, self.Calpha, self.ca_hydrophobe))
-				#print("BEst tilt : {}".format(self.best_tilt))
-		#print(self.best_tilt)
-		#print("Plan1 : {}\t Plan2: {}".format(plan_1, plan_2))
-		
-
-		#self.plan_score = np.array([0,0,0,0,0,0])
-		#for i,vector in enumerate(self.small_sphere.points_center):
-		#	plan_1, plan_2 = plan.plan_construction(self.centre, vector.tolist(), self.dmax)
-		#	val = entre_deux_plans.max_score(plan_1, plan_2, self.Calpha, self.ca_hydrophobe, self.dmax)
-		#	self.plan_score = np.vstack((self.plan_score, np.float_([plan_1[0], plan_1[1], plan_1[2], plan_1[3], plan_2[3], val])))
-		#self.plan_score = np.delete(self.plan_score, (0), axis = 0)
-		#print(self.plan_score)
-=======
->>>>>>> Ferdi:src/main.py
 
 
 	def ca_finder(self, file): #Read pdbfile and extracing in memorry and in file all alpha carbon
@@ -184,7 +153,7 @@ class proteine(object):
 
 
 	def __str__(self):
-		return("PDB file : {}\nGravity center : {}\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\nSequences: {}"
+		return("PDB file : {}\n\nGravity center : {}\n\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\n\nSequences: {}"
 			.format(self.file, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
 			 self.best_tilt[2], self.best_tilt[3], self.best_tilt[4], self.bilan))
 
@@ -197,6 +166,8 @@ if __name__ == "__main__":
 		, type=int, default=20)
 	parser.add_argument("--ASAT", help="Accessibility solvent area threshold between 0 and 1 (default=0.3)",
 		type=float, default=0.3)
+		parser.add_argument("--MBW", help="Membrane width in Angström (default=15)",
+		type=int, default=15)
 	args = parser.parse_args()
 
 	aacDF=aa.amino_acid_caracteristics(args.AAfile)
