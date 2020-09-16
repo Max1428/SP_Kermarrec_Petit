@@ -42,6 +42,7 @@ class sphere(object):
 class proteine(object):
 	def __init__(self, file, aacDF, N, ASAT, MBW):
 		self.MBW = MBW
+		self.N = N
 		self.file = file
 		self.cafile = file[8:-4]+"_ca.pdb" #output file creation
 		self.Calpha=np.array([0,0,0,0,0])
@@ -85,10 +86,10 @@ class proteine(object):
 		self.bilan = ",".join(block_list)
 
 		filename=(self.file[8:-4]+".txt")
-		print(filename)
+		#print(filename)
 		with open(filename, "w") as fillout:
-			fillout.write("PDB file : {}\n\nGravity center : {}\n\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\n\nSequences: {}"
-			.format(self.file, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
+			fillout.write("PDB file : {}\n\nPoints:{}\tASSAT:{}\tMembrane width:{}\n\nGravity center : {}\n\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\n\nPartie intramembranaire: {}"
+			.format(self.file, self.N, self.ASAT, self.MBW, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
 			 self.best_tilt[2], self.best_tilt[3], self.best_tilt[4], self.bilan))
 		os.rename(filename, "../results/"+filename)
 
@@ -153,8 +154,8 @@ class proteine(object):
 
 
 	def __str__(self):
-		return("PDB file : {}\n\nGravity center : {}\n\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\n\nSequences: {}"
-			.format(self.file, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
+		return("PDB file : {}\n\nPoints:{}\tASSAT:{}\tMembrane width:{}\n\nGravity center : {}\n\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\n\nPartie intramembranaire: {}"
+			.format(self.file, self.N, self.ASAT, self.MBW, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
 			 self.best_tilt[2], self.best_tilt[3], self.best_tilt[4], self.bilan))
 
 
@@ -166,7 +167,7 @@ if __name__ == "__main__":
 		, type=int, default=20)
 	parser.add_argument("--ASAT", help="Accessibility solvent area threshold between 0 and 1 (default=0.3)",
 		type=float, default=0.3)
-		parser.add_argument("--MBW", help="Membrane width in Angström (default=15)",
+	parser.add_argument("--MBW", help="Membrane width in Angström (default=15)",
 		type=int, default=15)
 	args = parser.parse_args()
 
@@ -174,7 +175,7 @@ if __name__ == "__main__":
 	if args.PDBfile[-4:] != '.pdb': #Vérification de l'extension pdb
 		print("Please select file with pdb extension")
 	else: 
-		pro = proteine(args.PDBfile, aacDF, args.N, args.ASAT)
+		pro = proteine(args.PDBfile, aacDF, args.N, args.ASAT, args.MBW)
 		print(pro)
 		
 
