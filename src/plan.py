@@ -13,7 +13,7 @@ def plan_construction(centre, vecteur, maxi):
 	vect_normal = [vecteur[0]-centre[0],vecteur[1]-centre[1],vecteur[2]-centre[2]]
     
 	plan_eq_1 = [vect_normal[0], vect_normal[1], vect_normal[2], float(-1)*((vect_normal[0]*centre[0]) + (vect_normal[1]*centre[1]) + (vect_normal[2]*centre[2]))]
-	plan_eq_1[3]=plan_eq_1[3]
+	plan_eq_1[3]=plan_eq_1[3]-maxi
 	plan_eq_2 = list(plan_eq_1)
 	plan_eq_2[3] = plan_eq_2[3] + 15
     #print(plan_eq_1[3], plan_eq_2[3])

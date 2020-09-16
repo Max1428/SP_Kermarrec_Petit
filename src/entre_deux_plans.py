@@ -19,13 +19,13 @@ def entre_deux_plans(plan_1, plan_2, point):
 	resolution = resolution*-1
 	#(resolution, plan_1[3], plan_2[3])
 	if resolution >= plan_1[3] and resolution <= plan_2[3] :
-		#print("ouiiiii")
 		return True
 
 
 	else :
 		#print("false")
 		return False
+# Finalement, cette fonction rapporte une valeur True ou False.
 
 #Fonction déterminant le nombre de carbonealpha avec hydrophobe entre les deux plans
 def score_plan(plan_1, plan_2, ca_list, ca_hydro):
@@ -41,31 +41,41 @@ def score_plan(plan_1, plan_2, ca_list, ca_hydro):
 	return score
 
 
+#Fonction déterminant les id de tout les atomes contenus enter deux plan.
+def id_atom_plan(plan_1, plan_2, ca_list, ca_hydro):
+	in_plan=[]
+	for i in ca_hydro:
+		if entre_deux_plans(plan_1, plan_2, ca_list[i][1:4].tolist()):
+			#print("+111111111111111111")
+			in_plan.append(i)
+	return in_plan
+
+
 #fonction déterminant les planes avec le plus grand nombre de carbone alpha hydrophobes dans l'ensemble des plans possible avec 
 def max_score(plan_1, plan_2, ca_list, ca_hydro, maxi):
 	#print("Dans max_score")
-	score_max=score_plan(plan_1, plan_2, ca_list, ca_hydro)
+	#score_max=score_plan(plan_1, plan_2, ca_list, ca_hydro)
 	tmp_plan_1 = list(plan_1)
 	tmp_plan_2 = list(plan_2)
-
+	score_max=0
 	#print(ca_hydro)
 	#print(len(ca_hydro))
 
 	for i in range(1, int(maxi)*2-14):
+		tmp_score = 0
 		tmp_plan_1[3]+=1
 		tmp_plan_2[3]+=1
 		#print(tmp_plan_1[3])
 		#print("dvalue : {}\t{}".format(tmp_plan_1[3], tmp_plan_2[3]))
 		tmp_score=score_plan(tmp_plan_1, tmp_plan_2, ca_list, ca_hydro)
-		#print(tmp_score)
+
 		#print("tmp_score = {}".format(tmp_score))
 		if(tmp_score>score_max):
 			score_max=tmp_score
+			d=tmp_plan_1[3]
+			dd=tmp_plan_2[3]
 
 
-	return score_max
+	return score_max, d, dd
 
 
-
-
-# Finalement, cette fonction rapporte une valeur True ou False.

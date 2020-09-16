@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import csv
 import math
+import os
 from Bio.PDB import PDBParser
 from Bio.PDB.DSSP import DSSP
 
@@ -41,11 +42,13 @@ class sphere(object):
 class proteine(object):
 	def __init__(self, file, aacDF, N):
 		self.file = file
-		self.cafile = file[:-4]+"_ca.pdb" #output file creation
+		self.cafile = file[8:-4]+"_ca.pdb" #output file creation
 		self.Calpha=np.array([0,0,0,0,0])
 		self.AA_name = [] #Amino Acid name
 		self.ASA = [] #Accessibility solvent area relative between 0 and 1
 		self.ca_hydrophobe = [] #Alpha carbon solvent exposed list
+		self.best_tilt = [] #Tilt with the higest score
+		self.bilan = "" #Bilan of AA inside the membrane
 
 		self.ca_finder(self.file)
 		self.center()
@@ -53,22 +56,75 @@ class proteine(object):
 		self.hydrophobicity(aacDF)
 		self.small_sphere=sphere(N)
 		self.small_sphere.translation(self.centre)
-		#print(self.small_sphere.points_center)
 		self.maxi()
-		self.scoring()
+		self.scoring() #Function calculatin best score for every points created
+		self.output()
+
+
+
+	def output(self):
+		plan_1 = self.best_tilt[0:4]
+		plan_2=self.best_tilt[0:3]
+		plan_2.append(self.best_tilt[4])
+		id_list = entre_deux_plans.id_atom_plan(plan_1, plan_2, self.Calpha, self.ca_hydrophobe)
+		block_list=[]
+		n=0
+		for x in range(0, len(id_list)):
+			if(x >= n and x+1< len(id_list) and id_list[x+1]==id_list[x]+1):
+				n=1
+				while(1):
+					if(x+n <len(id_list) and id_list[x+n] != id_list[x]+n):
+						block_list.append("{}({}-{})".format(len(block_list), id_list[x], id_list[x+n-1]))
+						n=x+n
+						break
+					else:
+						n+=1
+			elif x>=n:
+				block_list.append("{}({})".format(len(block_list), id_list[x]))
+				
+		self.bilan = ",".join(block_list)
+
+		filename=(self.file[8:-4]+".txt")
+		print(filename)
+		with open(filename, "w") as fillout:
+			fillout.write("PDB file : {}\n\nGravity center : {}\n\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\n\nSequences: {}"
+			.format(self.file, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
+			 self.best_tilt[2], self.best_tilt[3], self.best_tilt[4], self.bilan))
+		os.rename(filename, "../results/"+filename)
+
+
+
 
 
 	def scoring(self):
-		self.plan_score = np.array([0,0,0,0,0,0])
+		score_max = 0
 		for i,vector in enumerate(self.small_sphere.points_center):
 			plan_1, plan_2 = plan.plan_construction(self.centre, vector.tolist(), self.dmax)
-			val = entre_deux_plans.max_score(plan_1, plan_2, self.Calpha, self.ca_hydrophobe, self.dmax)
-			self.plan_score = np.vstack((self.plan_score, np.float_([plan_1[0], plan_1[1], plan_1[2], plan_1[3], plan_2[3], val])))
-		self.plan_score = np.delete(self.plan_score, (0), axis = 0)
+			score, d, dd = entre_deux_plans.max_score(plan_1, plan_2, self.Calpha, self.ca_hydrophobe, self.dmax)
+			
+			if score>=score_max:
+				#print(d, dd)
+				score_max=score
+				self.best_tilt=list(plan_1[0:3])
+				self.best_tilt.append(d)
+				self.best_tilt.append(dd)
+				self.best_tilt.append(score_max)
+				#print(entre_deux_plans.score_plan(plan_1, plan_2, self.Calpha, self.ca_hydrophobe))
+				#print("BEst tilt : {}".format(self.best_tilt))
+		#print(self.best_tilt)
+		#print("Plan1 : {}\t Plan2: {}".format(plan_1, plan_2))
+		
+
+		#self.plan_score = np.array([0,0,0,0,0,0])
+		#for i,vector in enumerate(self.small_sphere.points_center):
+		#	plan_1, plan_2 = plan.plan_construction(self.centre, vector.tolist(), self.dmax)
+		#	val = entre_deux_plans.max_score(plan_1, plan_2, self.Calpha, self.ca_hydrophobe, self.dmax)
+		#	self.plan_score = np.vstack((self.plan_score, np.float_([plan_1[0], plan_1[1], plan_1[2], plan_1[3], plan_2[3], val])))
+		#self.plan_score = np.delete(self.plan_score, (0), axis = 0)
 		#print(self.plan_score)
 
 
-	def ca_finder(self, file): #Read pdbfile and extracing in memorr and in file all alpha carbon
+	def ca_finder(self, file): #Read pdbfile and extracing in memorry and in file all alpha carbon
 		with open(file, 'r') as fillin, open(self.cafile, 'w') as fillout:
 			lines = fillin.readlines()
 			for line in lines:
@@ -79,39 +135,17 @@ class proteine(object):
 					self.Calpha = np.vstack((self.Calpha, np.float_([line[22:26],line[30:38], line[38:46], line[46:54], 0]))) #get the number and position of all Calpha
 					self.AA_name.append(line[17:20].strip())
 			self.Calpha = np.delete(self.Calpha, (0), axis = 0) #Delete the first row of the array fill with 0.
+		os.rename(self.cafile, "../results/"+self.cafile)
 
 	def center(self): #Calculate the center of the proteine
 		self.centre=list(np.mean(self.Calpha, axis=0))[1:4]
 
 	def maxi(self):
 		self.dmax=0
-
 		for i in self.Calpha:
 			d = math.sqrt((i[1]-self.centre[0])**2 +  (i[2]-self.centre[1])**2 + (i[3]-self.centre[2])**2)
 			if d > self.dmax:
 				self.dmax=float(d)
-		print(self.dmax)
-
-		#maxi=max(self.Calpha.max(axis=0)[1:4].tolist())
-		#mini=min(self.Calpha.min(axis=0)[1:4].tolist())
-		#print("Maxi ",maxi)
-		#print(mini)
-		#d_max=[]
-		#x=maxi
-		#for i in self.centre:
-	#		if  (x<0 and i<0): 
-		#		d_max.append(abs(x+i))
-		#	else:
-		#		d_max.append(abs(x-i))
-		#x=mini
-		#for i in self.centre:
-		#	if (x<0 and i<0): 
-		#		d_max.append(abs(x+i))
-		#	else:
-		#		d_max.append(abs(x-i))
-		#self.d_maxi=int(max(d_max))
-		#print(self.d_maxi)
-
 
 
 	def calc_ASA(self, file): #Calculate for each amino acid the relative accessibility solvent area, stocking it in a list
@@ -138,17 +172,20 @@ class proteine(object):
 		#print(self.Calpha[:,[4]])
 
 	def __str__(self):
-		return("PDB file : {}\nGravity center : {}\n".format(self.file, self.centre))
+		return("PDB file : {}\nGravity center : {}\nBest tilt : score={} a={}, b={}, c={}, d1={}, d2={}\nSequences: {}"
+			.format(self.file, self.centre, self.best_tilt[5], self.best_tilt[0], self.best_tilt[1],
+			 self.best_tilt[2], self.best_tilt[3], self.best_tilt[4], self.bilan))
 
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("PDBfile", help = "PDB file", type=str)
+	parser.add_argument("--AAfile", help = "Mandatory file auto", type=str, default="../data/amino_acid.csv")
 	parser.add_argument("--N", help="Number of point used to create the sphere (default = 20point)"
 		, type=int, default=20)
 	args = parser.parse_args()
 
-	aacDF=aa.amino_acid_caracteristics()
+	aacDF=aa.amino_acid_caracteristics(args.AAfile)
 	if args.PDBfile[-4:] != '.pdb': #Vérification de l'extension pdb
 		print("Please select file with pdb extension")
 	else: 

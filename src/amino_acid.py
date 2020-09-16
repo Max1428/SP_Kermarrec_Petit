@@ -1,8 +1,9 @@
 import csv
 import pandas as pd
+import os
 
-def amino_acid_caracteristics():
-    with open('amino_acid.csv', newline='\n') as csvfile:
+def amino_acid_caracteristics(file):
+    with open(file, newline='\n') as csvfile:
         amino = csv.reader(csvfile, delimiter=',')
         labels = []
         for row in amino:
@@ -12,7 +13,7 @@ def amino_acid_caracteristics():
         for row in amino:
             labels.append(str(list(row)[0]))
     csvfile.close()
-    with open('amino_acid.csv', newline='\n') as csvfile:
+    with open(file, newline='\n') as csvfile:
         amino = csv.reader(csvfile, delimiter=',')
         df = pd.DataFrame(amino, index=labels, columns=head)
         df.drop(columns = ['amino_acid'], inplace = True)
