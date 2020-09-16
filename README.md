@@ -1,6 +1,6 @@
 # SP_Kermarrec_Petit
 Projet rapide réaliser sur une semaine dans le cadre de notre formation de Master en Biologie-informatique à l'Université de Paris.
-Ce logiciel non copyrigthé calcul l'orientation de la membrane d'une protéine transmembranaire globulaire en se basant sur les propriété hydrophobes du milieu intracellulaire.
+Ce logiciel non copyrigthé calcul l'orientation de la membrane d'une protéine transmembranaire en se basant sur les propriété hydrophobes du milieu intracellulaire.
 
 ##Input :
 ###Obligatoire : 
@@ -21,6 +21,9 @@ Un fichier pdb nomproteine_ca.pdb contenant tous les carbonnes alpha de la prote
 Toutes les fichiers de sortis se trouvent dans le répertoire results
 
 ##Installation :
+Creation d'un environnement conda avec toutes les dépendances.
+conda env create -f projet_Membrane_MK_FP.yml
+conda activate projet_MK_FP
 
 ##Utilisation :
 Le programme se lance a partir du répertoire src.
